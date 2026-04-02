@@ -9,14 +9,14 @@ const fontSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "STOR TI — Estoque",
-  description: "Sistema de gestão de estoque multi-armazém",
+  title: "STOR — Controle de estoque",
+  description: "Gestão de produtos e movimentações",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
-      <body className={`${fontSans.variable} min-h-screen font-sans antialiased`}>{children}</body>
+    <html lang="pt-BR">
+      <body className={`${fontSans.variable} min-h-screen bg-slate-100 font-sans`}>{children}</body>
     </html>
   );
 }

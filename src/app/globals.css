@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0a1628;
-  --foreground: #e8f4f0;
-}
-
 body {
-  color: var(--foreground);
-  background: var(--background);
+  @apply antialiased text-slate-900;
 }

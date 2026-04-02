@@ -1,6 +1,10 @@
-# STOR TI — só front-end
+# STOR — Front-end
 
-Protótipo em **Next.js 14** + **React** + **Tailwind**. Sem API, sem banco: os dados vêm de `src/data/mock.ts` e de objetos locais nas páginas.
+Interface inspirada no painel **Controle de Estoque**: sidebar escura, conteúdo claro, abas, KPIs, filtros e tabela (estado vazio).
+
+## Stack
+
+- Next.js 14 · React 18 · Tailwind CSS · [Lucide](https://lucide.dev/) (ícones)
 
 ## Rodar
 
@@ -9,21 +13,12 @@ npm install
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000).
+Abre em `/estoque` por padrão.
 
-## Build (ex.: Vercel)
+## Rotas
 
-```bash
-npm run build
-npm start
-```
-
-Não há variáveis de ambiente obrigatórias.
-
-## Estrutura
-
-- `src/app/` — rotas e layouts
-- `src/components/` — UI reutilizável (ex.: `Sidebar`)
-- `src/data/mock.ts` — números e listas para telas de demonstração
-
-Quando for ligar backend de novo, substitua os mocks por `fetch` ou Server Actions e acrescente o projeto de API/banco separadamente.
+| Caminho | Conteúdo |
+|---------|----------|
+| `/estoque` | Tela principal do print (tabs, cards, busca, tabela) |
+| `/dashboard` | Atalhos |
+| `/chamados`, `/colaboradores`, … | Placeholders sob **Gestão** |

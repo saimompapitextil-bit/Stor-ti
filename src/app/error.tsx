@@ -14,9 +14,9 @@ export default function RootError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stor-950 p-8 text-center">
-      <h1 className="text-xl font-semibold text-white">Erro na aplicação</h1>
-      <p className="max-w-md text-sm text-slate-400">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-100 p-8 text-center">
+      <h1 className="text-xl font-semibold text-slate-900">Erro na aplicação</h1>
+      <p className="max-w-md text-sm text-slate-600">
         Algo falhou ao renderizar. Se estiver na Vercel, confira os logs do deployment.
       </p>
       {error.digest ? (
@@ -25,7 +25,7 @@ export default function RootError({
       <button
         type="button"
         onClick={() => reset()}
-        className="rounded-lg bg-stor-accent px-4 py-2 text-sm font-medium text-stor-950 hover:opacity-90"
+        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
       >
         Tentar novamente
       </button>

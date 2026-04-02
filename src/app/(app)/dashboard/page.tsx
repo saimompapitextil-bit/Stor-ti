@@ -1,53 +1,35 @@
 import Link from "next/link";
-import { mockAlerts, mockStats } from "@/data/mock";
+import { LayoutDashboard, Package } from "lucide-react";
 
 export default function DashboardPage() {
-  const alerts = mockAlerts;
-
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <header>
-        <h1 className="text-2xl font-semibold text-white">Painel</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          Dados de demonstração — sem backend conectado
-        </p>
-      </header>
+    <div className="p-6 lg:p-8">
+      <h1 className="text-2xl font-bold text-slate-900 lg:text-3xl">Dashboard</h1>
+      <p className="mt-1 text-slate-600">Visão geral do STOR</p>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-stor-700 bg-stor-900/60 p-5">
-          <p className="text-sm text-slate-400">Produtos ativos</p>
-          <p className="mt-2 text-3xl font-semibold text-stor-accent">{mockStats.productsActive}</p>
-        </div>
-        <div className="rounded-xl border border-stor-700 bg-stor-900/60 p-5">
-          <p className="text-sm text-slate-400">Armazéns ativos</p>
-          <p className="mt-2 text-3xl font-semibold text-stor-accent">{mockStats.warehousesActive}</p>
-        </div>
-        <div className="rounded-xl border border-stor-700 bg-stor-900/60 p-5 sm:col-span-2 lg:col-span-1">
-          <p className="text-sm text-slate-400">Itens abaixo do mínimo</p>
-          <p className="mt-2 text-3xl font-semibold text-amber-400">{alerts.length}</p>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Link
+          href="/estoque"
+          className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-200 hover:shadow-md"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            <Package className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-semibold text-slate-900">Controle de Estoque</p>
+            <p className="text-sm text-slate-500">Produtos e movimentações</p>
+          </div>
+        </Link>
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm opacity-80">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+            <LayoutDashboard className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-semibold text-slate-900">Resumos</p>
+            <p className="text-sm text-slate-500">Em breve</p>
+          </div>
         </div>
       </div>
-
-      <section className="rounded-xl border border-stor-700 bg-stor-900/40 p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-white">Alertas</h2>
-          <Link href="/estoque" className="text-sm text-stor-accent hover:underline">
-            Ver estoque
-          </Link>
-        </div>
-        <ul className="divide-y divide-stor-800">
-          {alerts.map((s) => (
-            <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
-              <span className="text-slate-200">
-                {s.sku} — {s.productName}
-              </span>
-              <span className="text-slate-500">
-                {s.warehouseCode}: {s.quantity} / mín. {s.minStock}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 }
