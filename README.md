@@ -34,6 +34,15 @@ npm run dev
 
 ## 2. GitHub
 
+Se ainda não definiu identidade no Git (necessário para commits):
+
+```bash
+git config --global user.name "Seu Nome"
+git config --global user.email "seu-email@exemplo.com"
+```
+
+Se o repositório ainda não existir:
+
 ```bash
 git init
 git add .
