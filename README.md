@@ -1,24 +1,44 @@
-# STOR — Front-end
+# STOR TI
 
-Interface inspirada no painel **Controle de Estoque**: sidebar escura, conteúdo claro, abas, KPIs, filtros e tabela (estado vazio).
+Front (Next.js + Tailwind + Lucide) + **PostgreSQL** via **Prisma**.
 
-## Stack
+## Banco de dados
 
-- Next.js 14 · React 18 · Tailwind CSS · [Lucide](https://lucide.dev/) (ícones)
-
-## Rodar
+1. Crie um projeto no [Supabase](https://supabase.com/) ou use Postgres local.
+2. Copie `.env.example` → `.env` e ajuste `DATABASE_URL`.
+3. Aplique o schema e (opcional) dados de exemplo:
 
 ```bash
 npm install
+npx prisma db push
+npm run db:seed
+```
+
+## Desenvolvimento
+
+```bash
 npm run dev
 ```
 
-Abre em `/estoque` por padrão.
+- **`/estoque`** — painel com KPIs, tabela, filtros, cadastro de produto, entrada/saída rápida e histórico de movimentações.
+- Sem `DATABASE_URL`, a página de estoque mostra instruções de configuração.
 
-## Rotas
+## Deploy (Vercel)
 
-| Caminho | Conteúdo |
-|---------|----------|
-| `/estoque` | Tela principal do print (tabs, cards, busca, tabela) |
-| `/dashboard` | Atalhos |
-| `/chamados`, `/colaboradores`, … | Placeholders sob **Gestão** |
+- Variável **`DATABASE_URL`** (Production e Preview).
+- Build: `prisma generate` roda no `postinstall` e no `build`.
+
+## Scripts
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run db:push` | Sincroniza tabelas com `schema.prisma` |
+| `npm run db:seed` | Popula categorias, unidades, armazéns e produtos de teste |
+| `npm run db:studio` | Interface visual do Prisma |
+
+## Modelo (resumo)
+
+- **Category**, **UnitOfMeasure**, **Warehouse**, **Product**, **StockLevel** (produto + armazém + qtd + mín/máx + local).
+- **StockMovement** + **StockMovementLine** — histórico (entrada / saída / ajuste).
+
+Server Actions em `src/actions/estoque.ts`; regras de movimentação em `src/lib/stock.ts`.
