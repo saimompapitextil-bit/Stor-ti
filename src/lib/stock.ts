@@ -1,5 +1,5 @@
 import type { MovementType, Prisma } from "@prisma/client";
-import { prisma } from "./prisma";
+import { getPrisma } from "./prisma";
 
 function assert(cond: boolean, msg: string): asserts cond {
   if (!cond) throw new Error(msg);
@@ -45,7 +45,7 @@ export async function applyMovement(params: {
     assert(!!warehouseFromId, "Saída exige armazém de origem.");
   }
 
-  return prisma.$transaction(async (tx) => {
+  return getPrisma().$transaction(async (tx) => {
     const movement = await tx.movement.create({
       data: {
         type,

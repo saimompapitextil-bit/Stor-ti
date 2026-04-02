@@ -1,8 +1,25 @@
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { Prisma as PrismaRuntime } from "@prisma/client";
+import { getPrisma } from "@/lib/prisma";
+
+type StockWithRelations = Prisma.StockLevelGetPayload<{
+  include: { product: true; warehouse: true };
+}>;
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+function isInitError(err: unknown): boolean {
+  return (
+    err instanceof PrismaRuntime.PrismaClientInitializationError ||
+    (err instanceof Error && err.name === "PrismaClientInitializationError")
+  );
+}
+
+function isKnownRequest(err: unknown): err is PrismaRuntime.PrismaClientKnownRequestError {
+  return err instanceof PrismaRuntime.PrismaClientKnownRequestError;
+}
 
 function SetupCard({
   title,
@@ -20,24 +37,26 @@ function SetupCard({
 }
 
 export default async function DashboardPage() {
-  if (!process.env.DATABASE_URL) {
+  if (!process.env.DATABASE_URL?.trim()) {
     return (
       <SetupCard title="Variável DATABASE_URL ausente">
         <p>
-          Configure <code className="rounded bg-stor-900 px-1 py-0.5 text-stor-accent">DATABASE_URL</code>{" "}
-          nas <strong>Environment Variables</strong> do projeto na Vercel (ou no arquivo <code>.env</code>{" "}
-          local), com a connection string do Supabase.
+          Configure <code className="rounded bg-stor-900 px-1 py-0.5 text-stor-accent">DATABASE_URL</code> na Vercel
+          em <strong>Settings → Environment Variables</strong> para <strong>Production</strong>{" "}
+          <em>e</em> <strong>Preview</strong> (se usar branch/PR). Inclua{" "}
+          <code className="rounded bg-stor-900 px-0.5">?sslmode=require</code> se o Supabase indicar.
         </p>
-        <p>Depois faça um novo deploy (Redeploy) na Vercel.</p>
+        <p>Depois: <strong>Deployments → … → Redeploy</strong>.</p>
       </SetupCard>
     );
   }
 
   let products: number;
   let warehouses: number;
-  let lowStock: Awaited<ReturnType<typeof prisma.stockLevel.findMany>>;
+  let lowStock: StockWithRelations[];
 
   try {
+    const prisma = getPrisma();
     [products, warehouses, lowStock] = await Promise.all([
       prisma.product.count({ where: { active: true } }),
       prisma.warehouse.count({ where: { active: true } }),
@@ -48,15 +67,15 @@ export default async function DashboardPage() {
     ]);
   } catch (err: unknown) {
     let hint =
-      "Abra na Vercel: projeto → Deployments → último deploy → Logs (Functions) para ver o erro completo.";
+      "Na Vercel: projeto → último Deployment → Logs (Functions). Procure pela mensagem após o Digest.";
 
-    if (err instanceof Prisma.PrismaClientInitializationError) {
+    if (isInitError(err)) {
       hint =
-        "Falha ao conectar ao Postgres. Confira se a DATABASE_URL está correta (senha, host, porta 5432) e se o projeto Supabase está ativo. A string costuma precisar de ?sslmode=require.";
-    } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === "P2021" || err.code === "P2010") {
+        "Não foi possível conectar ao Postgres. Confira DATABASE_URL (host db.xxx.supabase.co, porta 5432, senha sem caracteres mal escapados na URI). Use a string «URI» do Supabase; em geral acrescente ?sslmode=require.";
+    } else if (isKnownRequest(err)) {
+      if (err.code === "P2021" || err.code === "P2010" || err.message.includes("does not exist")) {
         hint =
-          "As tabelas ainda não existem no banco. No seu PC, com DATABASE_URL apontando para o mesmo Supabase, rode: npx prisma db push e opcionalmente npm run db:seed.";
+          "Tabelas ainda não criadas. No PC: exporte DATABASE_URL igual à Vercel e rode: npx prisma db push && npm run db:seed";
       }
     }
 
@@ -65,7 +84,9 @@ export default async function DashboardPage() {
     return (
       <SetupCard title="Erro ao acessar o banco de dados">
         <p className="text-slate-400">{hint}</p>
-        <p className="rounded-lg border border-stor-800 bg-stor-900/80 p-3 font-mono text-xs text-slate-500">{detail}</p>
+        <p className="rounded-lg border border-stor-800 bg-stor-900/80 p-3 font-mono text-xs text-slate-500 break-all">
+          {detail}
+        </p>
         <p>
           <Link href="https://supabase.com/dashboard" className="text-stor-accent hover:underline">
             Abrir Supabase
