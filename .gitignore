@@ -1,10 +1,7 @@
 node_modules
 .next
 .env
-.env.local
-*.db
-*.db-journal
+.env*.local
+*.log
 .DS_Store
-npm-debug.log*
 .vercel
-

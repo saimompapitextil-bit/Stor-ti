@@ -1,63 +1,64 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { Prisma as PrismaRuntime } from "@prisma/client";
+import { Prisma as PrismaNS } from "@prisma/client";
 import { getPrisma } from "@/lib/prisma";
-
-type StockWithRelations = Prisma.StockLevelGetPayload<{
-  include: { product: true; warehouse: true };
-}>;
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function isInitError(err: unknown): boolean {
-  return (
-    err instanceof PrismaRuntime.PrismaClientInitializationError ||
-    (err instanceof Error && err.name === "PrismaClientInitializationError")
-  );
-}
+type StockRow = Prisma.StockLevelGetPayload<{
+  include: { product: true; warehouse: true };
+}>;
 
-function isKnownRequest(err: unknown): err is PrismaRuntime.PrismaClientKnownRequestError {
-  return err instanceof PrismaRuntime.PrismaClientKnownRequestError;
-}
-
-function SetupCard({
+function Card({
   title,
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <div className="mx-auto max-w-2xl rounded-xl border border-amber-500/40 bg-amber-950/30 p-6">
+    <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-6">
       <h1 className="text-xl font-semibold text-amber-200">{title}</h1>
       <div className="mt-4 space-y-3 text-sm text-slate-300">{children}</div>
     </div>
   );
 }
 
+function isInitError(e: unknown): boolean {
+  return (
+    e instanceof PrismaNS.PrismaClientInitializationError ||
+    (e instanceof Error && e.name === "PrismaClientInitializationError")
+  );
+}
+
+function isKnown(e: unknown): e is PrismaNS.PrismaClientKnownRequestError {
+  return e instanceof PrismaNS.PrismaClientKnownRequestError;
+}
+
 export default async function DashboardPage() {
-  if (!process.env.DATABASE_URL?.trim()) {
+  const dbUrl = process.env.DATABASE_URL?.trim();
+  if (!dbUrl) {
     return (
-      <SetupCard title="Variável DATABASE_URL ausente">
+      <Card title="DATABASE_URL ausente">
         <p>
-          Configure <code className="rounded bg-stor-900 px-1 py-0.5 text-stor-accent">DATABASE_URL</code> na Vercel
-          em <strong>Settings → Environment Variables</strong> para <strong>Production</strong>{" "}
-          <em>e</em> <strong>Preview</strong> (se usar branch/PR). Inclua{" "}
-          <code className="rounded bg-stor-900 px-0.5">?sslmode=require</code> se o Supabase indicar.
+          Em <strong>Vercel → Settings → Environment Variables</strong>, defina <code>DATABASE_URL</code>{" "}
+          para <strong>Production</strong> e <strong>Preview</strong>. Use a URI <em>Direct</em> do Supabase
+          (porta 5432), de preferência com <code>?sslmode=require</code>.
         </p>
-        <p>Depois: <strong>Deployments → … → Redeploy</strong>.</p>
-      </SetupCard>
+        <p>Salve e faça <strong>Redeploy</strong>.</p>
+      </Card>
     );
   }
 
   let products: number;
   let warehouses: number;
-  let lowStock: StockWithRelations[];
+  let stockRows: StockRow[];
 
   try {
     const prisma = getPrisma();
-    [products, warehouses, lowStock] = await Promise.all([
+    [products, warehouses, stockRows] = await Promise.all([
       prisma.product.count({ where: { active: true } }),
       prisma.warehouse.count({ where: { active: true } }),
       prisma.stockLevel.findMany({
@@ -65,45 +66,58 @@ export default async function DashboardPage() {
         include: { product: true, warehouse: true },
       }),
     ]);
-  } catch (err: unknown) {
-    let hint =
-      "Na Vercel: projeto → último Deployment → Logs (Functions). Procure pela mensagem após o Digest.";
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+
+    let hint: ReactNode = (
+      <p className="text-slate-400">
+        Abra o deployment na Vercel → guia <strong className="text-slate-300">Logs</strong> (Functions) para
+        ver o stack trace completo.
+      </p>
+    );
 
     if (isInitError(err)) {
-      hint =
-        "Não foi possível conectar ao Postgres. Confira DATABASE_URL (host db.xxx.supabase.co, porta 5432, senha sem caracteres mal escapados na URI). Use a string «URI» do Supabase; em geral acrescente ?sslmode=require.";
-    } else if (isKnownRequest(err)) {
+      hint = (
+        <p className="text-slate-400">
+          Falha de conexão com o Postgres. Revise usuário, senha, host (
+          <code className="text-stor-muted">db.xxx.supabase.co</code>) e{" "}
+          <code className="text-stor-muted">?sslmode=require</code> na URI.
+        </p>
+      );
+    } else if (isKnown(err)) {
       if (err.code === "P2021" || err.code === "P2010" || err.message.includes("does not exist")) {
-        hint =
-          "Tabelas ainda não criadas. No PC: exporte DATABASE_URL igual à Vercel e rode: npx prisma db push && npm run db:seed";
+        hint = (
+          <p className="text-slate-400">
+            Tabelas não existem. Localmente, com a mesma{" "}
+            <code className="text-stor-muted">DATABASE_URL</code>: rode{" "}
+            <code className="text-stor-muted">npx prisma db push</code> e{" "}
+            <code className="text-stor-muted">npm run db:seed</code>.
+          </p>
+        );
       }
     }
 
-    const detail = err instanceof Error ? err.message : String(err);
-
     return (
-      <SetupCard title="Erro ao acessar o banco de dados">
-        <p className="text-slate-400">{hint}</p>
-        <p className="rounded-lg border border-stor-800 bg-stor-900/80 p-3 font-mono text-xs text-slate-500 break-all">
-          {detail}
-        </p>
-        <p>
-          <Link href="https://supabase.com/dashboard" className="text-stor-accent hover:underline">
-            Abrir Supabase
-          </Link>
-        </p>
-      </SetupCard>
+      <Card title="Erro ao acessar o banco">
+        {hint}
+        <pre className="whitespace-pre-wrap break-all rounded-lg border border-stor-800 bg-stor-900/80 p-3 font-mono text-xs text-slate-500">
+          {msg}
+        </pre>
+        <Link className="inline-block text-stor-accent hover:underline" href="https://supabase.com/dashboard">
+          Abrir Supabase
+        </Link>
+      </Card>
     );
   }
 
-  const alerts = lowStock.filter((s) => s.quantity <= s.minStock).slice(0, 8);
+  const alerts = stockRows.filter((s) => s.quantity <= s.minStock).slice(0, 10);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <div>
+      <header>
         <h1 className="text-2xl font-semibold text-white">Painel</h1>
-        <p className="mt-1 text-sm text-slate-400">Visão geral do estoque — STOR</p>
-      </div>
+        <p className="mt-1 text-sm text-slate-400">Resumo do estoque</p>
+      </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-stor-700 bg-stor-900/60 p-5">
@@ -115,16 +129,16 @@ export default async function DashboardPage() {
           <p className="mt-2 text-3xl font-semibold text-stor-accent">{warehouses}</p>
         </div>
         <div className="rounded-xl border border-stor-700 bg-stor-900/60 p-5 sm:col-span-2 lg:col-span-1">
-          <p className="text-sm text-slate-400">Alertas (abaixo do mínimo)</p>
+          <p className="text-sm text-slate-400">Itens abaixo do mínimo</p>
           <p className="mt-2 text-3xl font-semibold text-amber-400">{alerts.length}</p>
         </div>
       </div>
 
-      <div className="rounded-xl border border-stor-700 bg-stor-900/40 p-5">
+      <section className="rounded-xl border border-stor-700 bg-stor-900/40 p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-white">Itens em atenção</h2>
+          <h2 className="text-lg font-medium text-white">Alertas</h2>
           <Link href="/estoque" className="text-sm text-stor-accent hover:underline">
-            Ver estoque
+            Estoque
           </Link>
         </div>
         {alerts.length === 0 ? (
@@ -143,7 +157,7 @@ export default async function DashboardPage() {
             ))}
           </ul>
         )}
-      </div>
+      </section>
     </div>
   );
 }

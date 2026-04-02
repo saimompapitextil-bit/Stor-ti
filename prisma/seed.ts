@@ -15,7 +15,7 @@ async function main() {
   await prisma.unitOfMeasure.deleteMany();
 
   const un = await prisma.unitOfMeasure.create({ data: { code: "UN", name: "Unidade" } });
-  const cx = await prisma.unitOfMeasure.create({ data: { code: "CX", name: "Caixa" } });
+  await prisma.unitOfMeasure.create({ data: { code: "CX", name: "Caixa" } });
   const pc = await prisma.unitOfMeasure.create({ data: { code: "PC", name: "Pacote" } });
 
   const catTi = await prisma.category.create({ data: { name: "Infraestrutura de TI" } });

@@ -1,100 +1,49 @@
-# STOR — Gestão de estoque
+# STOR TI
 
-Next.js 14 + Prisma + PostgreSQL ([Supabase](https://supabase.com/)). Deploy recomendado na [Vercel](https://vercel.com/).
+App **Next.js 14** + **Prisma** + **PostgreSQL** ([Supabase](https://supabase.com/)). Deploy na [Vercel](https://vercel.com/).
 
-## Pré-requisitos
+## Requisitos
 
-- Node.js 20+
-- Conta no GitHub, Supabase e Vercel
+- Node.js 18.17+
+- Projeto Supabase e repositório Git
 
-## 1. Supabase
-
-1. Crie um projeto em [Supabase Dashboard](https://supabase.com/dashboard).
-2. Vá em **Project Settings → Database** e copie as strings de conexão.
-3. Para este projeto, use de preferência a **Direct connection** (porta **5432**, host `db.<ref>.supabase.co`) como `DATABASE_URL` — evita erros com Prisma e com `db push`. Inclua `?sslmode=require` se necessário.
-4. Pooler na porta **6543** é opcional em tráfego alto; exige parâmetros como `pgbouncer=true` e `connection_limit=1` (veja [documentação Supabase + Prisma](https://supabase.com/docs/guides/database/prisma)).
-
-Variável (local e Vercel):
-
-| Variável        | Uso |
-|-----------------|-----|
-| `DATABASE_URL`  | App + `prisma db push` (ideal: URI direta 5432). |
-
-Exemplos estão em `.env.example`. **Não commite** o arquivo `.env`.
-
-No seu PC, após configurar `.env`:
+## Configuração local
 
 ```bash
+cp .env.example .env
+# Edite DATABASE_URL com a URI Direct (5432) do Supabase
 npm install
 npx prisma db push
 npm run db:seed
 npm run dev
 ```
 
-## 2. GitHub
+Abra [http://localhost:3000](http://localhost:3000) — redireciona para `/dashboard`.
 
-Se ainda não definiu identidade no Git (necessário para commits):
+## Vercel
 
-```bash
-git config --global user.name "Seu Nome"
-git config --global user.email "seu-email@exemplo.com"
-```
+1. Importe o repositório.
+2. **Environment Variables:** `DATABASE_URL` (Production **e** Preview), URI Direct do Supabase, ex.:  
+   `postgresql://postgres:SENHA@db.xxxxx.supabase.co:5432/postgres?sslmode=require`
+3. Deploy. O comando de build roda `prisma generate && next build`.
+4. Garanta que o schema existe no banco (`npx prisma db push` local contra o mesmo projeto).
 
-Se o repositório ainda não existir:
+**Importante:** use só `next.config.mjs` e `postcss.config.mjs` — o Next 14 da Vercel **não** aceita `next.config.ts`.
 
-```bash
-git init
-git add .
-git commit -m "chore: projeto STOR com Supabase"
-```
+## Scripts
 
-Crie um repositório vazio no GitHub (**sem** README inicial, se for o primeiro push) e conecte:
-
-```bash
-git remote add origin https://github.com/SEU_USUARIO/stor.git
-git branch -M main
-git push -u origin main
-```
-
-Substitua `SEU_USUARIO/stor` pelo seu usuário e nome do repo.
-
-## 3. Vercel
-
-1. Em [vercel.com/new](https://vercel.com/new), importe o repositório do GitHub.
-2. **Framework Preset:** Next.js (detectado automaticamente).
-3. Em **Environment Variables**, adicione:
-   - `DATABASE_URL` — string do pooler (ou a mesma da direta em testes).
-   - `DIRECT_URL` — string direta 5432 (obrigatória para `prisma db push` no build se você rodar migrações no deploy).
-4. Faça o deploy.
-
-O `package.json` já executa `prisma generate` no `postinstall`. O build usa `next build`.
-
-### Primeiro deploy após criar o banco
-
-Se o schema ainda não existir no Supabase, rode **uma vez** contra o Postgres do projeto:
-
-```bash
-# Com DATABASE_URL apontando para o mesmo projeto Supabase
-npx prisma db push
-npm run db:seed
-```
-
-### Erro “Application error” / Digest na Vercel
-
-- Confirme **`DATABASE_URL`** nas variáveis de ambiente e faça **Redeploy**.
-- Garanta que o schema existe no banco: `npx prisma db push` (local, com a mesma URL).
-- Painel (`/dashboard`) passa a exibir mensagens mais claras se o banco ou a configuração falharem.
-
-Isso pode ser feito localmente (com `.env` do Supabase) ou via CI. Alternativa: adicione um script de release ou execute `db push` manualmente antes de confiar no tráfego de produção.
-
-## Scripts úteis
-
-| Comando | Descrição |
-|---------|-----------|
+| Comando | Função |
+|---------|--------|
 | `npm run dev` | Desenvolvimento |
-| `npm run build` | Build de produção |
-| `npx prisma studio` | UI do banco |
+| `npm run build` | Build produção |
+| `npm run db:push` | Aplicar schema no Postgres |
+| `npm run db:seed` | Dados de exemplo |
+| `npm run db:studio` | UI do Prisma |
 
-## Licença
+## API
 
-Uso interno / defina conforme sua organização.
+- `GET /api/health` — JSON `{ ok: true }` (sem banco).
+
+## Modelo de dados
+
+Categorias, produtos, unidades, armazéns, níveis de estoque, movimentações, fornecedores e ordens de compra — ver `prisma/schema.prisma`.

@@ -15,18 +15,13 @@ export default function RootError({
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stor-950 p-8 text-center">
-      <h1 className="text-xl font-semibold text-white">Erro no servidor</h1>
-      <p className="max-w-lg text-sm text-slate-400">
-        Ocorreu uma exceção ao renderizar a página. Em produção (Vercel), abra o deployment →{" "}
-        <strong className="text-slate-300">Logs</strong> e filtre por erros da função. Causas frequentes:{" "}
-        <code className="text-stor-muted">DATABASE_URL</code> ausente ou inválida, banco inacessível, ou tabelas
-        Prisma não criadas (<code className="text-stor-muted">npx prisma db push</code>).
+      <h1 className="text-xl font-semibold text-white">Erro na aplicação</h1>
+      <p className="max-w-md text-sm text-slate-400">
+        Verifique na Vercel os <strong>Logs</strong> do deployment. Em geral: <code>DATABASE_URL</code>{" "}
+        ausente ou banco sem schema (<code>npx prisma db push</code>).
       </p>
       {error.digest ? (
-        <p className="font-mono text-xs text-amber-200/80">Digest: {error.digest}</p>
-      ) : null}
-      {error.message ? (
-        <p className="max-w-xl break-all font-mono text-xs text-slate-500">{error.message}</p>
+        <p className="font-mono text-xs text-amber-200/90">Digest: {error.digest}</p>
       ) : null}
       <button
         type="button"

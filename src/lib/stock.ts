@@ -1,11 +1,15 @@
 import type { MovementType, Prisma } from "@prisma/client";
 import { getPrisma } from "./prisma";
 
-function assert(cond: boolean, msg: string): asserts cond {
-  if (!cond) throw new Error(msg);
+function assert(condition: boolean, message: string): asserts condition {
+  if (!condition) throw new Error(message);
 }
 
-async function ensureStockLevel(productId: string, warehouseId: string, tx: Prisma.TransactionClient) {
+async function ensureStockLevel(
+  productId: string,
+  warehouseId: string,
+  tx: Prisma.TransactionClient,
+) {
   let row = await tx.stockLevel.findUnique({
     where: { productId_warehouseId: { productId, warehouseId } },
   });
@@ -65,7 +69,7 @@ export async function applyMovement(params: {
     for (const l of lines) {
       if (isTransfer && warehouseFromId && warehouseToId) {
         const from = await ensureStockLevel(l.productId, warehouseFromId, tx);
-        assert(from.quantity >= l.quantity, `Estoque insuficiente no armazém de origem para o produto.`);
+        assert(from.quantity >= l.quantity, "Estoque insuficiente no armazém de origem.");
         await tx.stockLevel.update({
           where: { id: from.id },
           data: { quantity: { decrement: l.quantity } },
@@ -83,7 +87,7 @@ export async function applyMovement(params: {
         });
       } else if (isOut && warehouseFromId) {
         const from = await ensureStockLevel(l.productId, warehouseFromId, tx);
-        assert(from.quantity >= l.quantity, `Estoque insuficiente para baixa.`);
+        assert(from.quantity >= l.quantity, "Estoque insuficiente para baixa.");
         await tx.stockLevel.update({
           where: { id: from.id },
           data: { quantity: { decrement: l.quantity } },
