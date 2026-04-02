@@ -17,8 +17,7 @@ export default function RootError({
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-stor-950 p-8 text-center">
       <h1 className="text-xl font-semibold text-white">Erro na aplicação</h1>
       <p className="max-w-md text-sm text-slate-400">
-        Verifique na Vercel os <strong>Logs</strong> do deployment. Em geral: <code>DATABASE_URL</code>{" "}
-        ausente ou banco sem schema (<code>npx prisma db push</code>).
+        Algo falhou ao renderizar. Se estiver na Vercel, confira os logs do deployment.
       </p>
       {error.digest ? (
         <p className="font-mono text-xs text-amber-200/90">Digest: {error.digest}</p>

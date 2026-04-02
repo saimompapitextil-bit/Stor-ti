@@ -1,49 +1,29 @@
-# STOR TI
+# STOR TI — só front-end
 
-App **Next.js 14** + **Prisma** + **PostgreSQL** ([Supabase](https://supabase.com/)). Deploy na [Vercel](https://vercel.com/).
+Protótipo em **Next.js 14** + **React** + **Tailwind**. Sem API, sem banco: os dados vêm de `src/data/mock.ts` e de objetos locais nas páginas.
 
-## Requisitos
-
-- Node.js 18.17+
-- Projeto Supabase e repositório Git
-
-## Configuração local
+## Rodar
 
 ```bash
-cp .env.example .env
-# Edite DATABASE_URL com a URI Direct (5432) do Supabase
 npm install
-npx prisma db push
-npm run db:seed
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) — redireciona para `/dashboard`.
+Abra [http://localhost:3000](http://localhost:3000).
 
-## Vercel
+## Build (ex.: Vercel)
 
-1. Importe o repositório.
-2. **Environment Variables:** `DATABASE_URL` (Production **e** Preview), URI Direct do Supabase, ex.:  
-   `postgresql://postgres:SENHA@db.xxxxx.supabase.co:5432/postgres?sslmode=require`
-3. Deploy. O comando de build roda `prisma generate && next build`.
-4. Garanta que o schema existe no banco (`npx prisma db push` local contra o mesmo projeto).
+```bash
+npm run build
+npm start
+```
 
-**Importante:** use só `next.config.mjs` e `postcss.config.mjs` — o Next 14 da Vercel **não** aceita `next.config.ts`.
+Não há variáveis de ambiente obrigatórias.
 
-## Scripts
+## Estrutura
 
-| Comando | Função |
-|---------|--------|
-| `npm run dev` | Desenvolvimento |
-| `npm run build` | Build produção |
-| `npm run db:push` | Aplicar schema no Postgres |
-| `npm run db:seed` | Dados de exemplo |
-| `npm run db:studio` | UI do Prisma |
+- `src/app/` — rotas e layouts
+- `src/components/` — UI reutilizável (ex.: `Sidebar`)
+- `src/data/mock.ts` — números e listas para telas de demonstração
 
-## API
-
-- `GET /api/health` — JSON `{ ok: true }` (sem banco).
-
-## Modelo de dados
-
-Categorias, produtos, unidades, armazéns, níveis de estoque, movimentações, fornecedores e ordens de compra — ver `prisma/schema.prisma`.
+Quando for ligar backend de novo, substitua os mocks por `fetch` ou Server Actions e acrescente o projeto de API/banco separadamente.
