@@ -11,15 +11,14 @@ Next.js 14 + Prisma + PostgreSQL ([Supabase](https://supabase.com/)). Deploy rec
 
 1. Crie um projeto em [Supabase Dashboard](https://supabase.com/dashboard).
 2. Vá em **Project Settings → Database** e copie as strings de conexão.
-3. No modo **Transaction pooling** (recomendado para serverless), use a URI na porta **6543** com `pgbouncer=true`.
-4. Para migrações Prisma (`db push` / `migrate`), use conexão **direta** na porta **5432** (host `db.<project-ref>.supabase.co` ou “Session mode”, conforme o painel).
+3. Para este projeto, use de preferência a **Direct connection** (porta **5432**, host `db.<ref>.supabase.co`) como `DATABASE_URL` — evita erros com Prisma e com `db push`. Inclua `?sslmode=require` se necessário.
+4. Pooler na porta **6543** é opcional em tráfego alto; exige parâmetros como `pgbouncer=true` e `connection_limit=1` (veja [documentação Supabase + Prisma](https://supabase.com/docs/guides/database/prisma)).
 
-Variáveis (local e Vercel):
+Variável (local e Vercel):
 
-| Variável       | Uso |
-|----------------|-----|
-| `DATABASE_URL` | App em runtime (ideal: pooler Supabase). |
-| `DIRECT_URL`   | Migrações Prisma (sessão direta 5432). |
+| Variável        | Uso |
+|-----------------|-----|
+| `DATABASE_URL`  | App + `prisma db push` (ideal: URI direta 5432). |
 
 Exemplos estão em `.env.example`. **Não commite** o arquivo `.env`.
 
@@ -75,10 +74,16 @@ O `package.json` já executa `prisma generate` no `postinstall`. O build usa `ne
 Se o schema ainda não existir no Supabase, rode **uma vez** contra o Postgres do projeto:
 
 ```bash
-# Com DIRECT_URL e DATABASE_URL apontando para o mesmo projeto Supabase
+# Com DATABASE_URL apontando para o mesmo projeto Supabase
 npx prisma db push
 npm run db:seed
 ```
+
+### Erro “Application error” / Digest na Vercel
+
+- Confirme **`DATABASE_URL`** nas variáveis de ambiente e faça **Redeploy**.
+- Garanta que o schema existe no banco: `npx prisma db push` (local, com a mesma URL).
+- Painel (`/dashboard`) passa a exibir mensagens mais claras se o banco ou a configuração falharem.
 
 Isso pode ser feito localmente (com `.env` do Supabase) ou via CI. Alternativa: adicione um script de release ou execute `db push` manualmente antes de confiar no tráfego de produção.
 

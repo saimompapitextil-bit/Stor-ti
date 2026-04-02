@@ -1,14 +1,15 @@
 // STOR — Estoque multi-armazém, ordens de compra, movimentações
-// Banco: PostgreSQL (Supabase). Use DATABASE_URL (pooler) + DIRECT_URL (sessão) no .env
+// Banco: PostgreSQL (Supabase). Uma única DATABASE_URL simplifica deploy (Vercel).
+// Use a URI "Direct" ou "Session" (porta 5432) no Supabase para Prisma + db push.
+// Pooler Transaction (6543) exige ajustes extras; ver README.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Category {

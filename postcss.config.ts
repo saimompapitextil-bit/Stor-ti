@@ -1,4 +1,4 @@
-/** @type {import('postcss-load-config').Config} */
+/** Configuração PostCSS (Tailwind + Autoprefixer) — consumida pelo Next.js */
 const config = {
   plugins: {
     tailwindcss: {},
